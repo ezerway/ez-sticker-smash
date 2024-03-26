@@ -1,5 +1,6 @@
 :80 {
-    root * /srv/app/public
+    root * /srv/app/public/admin
+    index index.php index.html
 
     @websockets {
         header Connection *upgrade*
