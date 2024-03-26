@@ -14,20 +14,20 @@ class CreateStickersTable extends Migration
     {
         Schema::create('stickers', function (Blueprint $table) {
             $table->id();
-            $table->number('sticker_id');
+            $table->integer('sticker_id');
             $table->string('description');
             $table->string('colors');
             $table->string('color');
             $table->string('shape');
-            $table->number('family_id');
+            $table->integer('family_id');
             $table->string('family_name');
             $table->string('team_name');
-            $table->number('added');
-            $table->number('pack_id');
+            $table->integer('added');
+            $table->integer('pack_id');
             $table->string('pack_name');
-            $table->number('pack_items');
+            $table->integer('pack_items');
             $table->string('tags');
-            $table->number('equivalents');
+            $table->integer('equivalents');
             $table->json('images');
             $table->timestamps();
         });
