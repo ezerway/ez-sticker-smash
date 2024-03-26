@@ -1,5 +1,5 @@
 :80 {
-    root * /srv/app/public/admin
+    root * /srv/app/public
 
     @websockets {
         header Connection *upgrade*
