@@ -27,7 +27,7 @@ class CustomerController extends Controller
      */
     public function index()
     {
-        $res = [ 'data' => []];
+        $res = ['data' => []];
 //        $firebaseRes = [];
         $firebaseRes = $this->database->getReference('users')->getValue();
         foreach ($firebaseRes as $firebaseId => $value) {
@@ -55,7 +55,7 @@ class CustomerController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Customer  $customer
+     * @param \App\Models\Customer $customer
      * @return CustomerResource
      */
     public function show(Customer $customer)
@@ -66,30 +66,39 @@ class CustomerController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return CustomerResource
      */
     public function store(
-        StoreCustomer $request,
+        StoreCustomer            $request,
         ExpoNotificationsService $service
-    ) {
+    )
+    {
         $payload = $request->all();
         $firebaseRes = $this->database->getReference('users')->getValue();
-        $tokens = [];
+        $tokens = collect();
         foreach ($firebaseRes as $value) {
-            $tokens[] = $value['expo_push_token'];
-        }
-        $message = (new ExpoMessage())
-            ->to($tokens)
-            ->title($payload['title'])
-            ->body($payload['body'])
-            ->channelId('default');
-
-        if ($payload['sound'] === 1) {
-            $message->enableSound();
+            $tokens->add($value['expo_push_token']);
         }
 
-        $service->notify(collect([$message]));
+        $sound = $payload['sound'] === 1;
+
+        foreach ($tokens->chunk(10) as $items) {
+            foreach ($items as $item) {
+                $message = (new ExpoMessage())
+                    ->to($item)
+                    ->title($payload['title'])
+                    ->body($payload['body'])
+                    ->channelId('default');
+
+                if ($sound) {
+                    $message->enableSound();
+                }
+
+                $service->notify(collect([$message]));
+            }
+        }
+
         return [];
 
         $customer = Customer::create($request->all());
@@ -99,8 +108,8 @@ class CustomerController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Customer  $customer
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Customer $customer
      * @return CustomerResource
      */
     public function update(UpdateCustomer $request, Customer $customer)
@@ -113,7 +122,7 @@ class CustomerController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Customer  $customer
+     * @param \App\Models\Customer $customer
      * @return \Illuminate\Http\Response
      * @throws \Exception
      */
