@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build --mode production",
+    "build": "vue-cli-service build --mode production && rm -rf ../public/admin/* && cp -r ./dist/* ../public/admin",
     "lint": "vue-cli-service lint",
     "crud:make": "vue-cli-service crud:make",
     "crud:yaml": "vue-cli-service crud:yaml",
