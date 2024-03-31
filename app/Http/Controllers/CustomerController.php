@@ -80,28 +80,25 @@ class CustomerController extends Controller
     {
         $payload = $request->all();
         $firebaseRes = $this->database->getReference('users')->getValue();
-        $tokens = collect();
+        $tokens = [];
         foreach ($firebaseRes as $value) {
-            $tokens->add($value['expo_push_token']);
+            $tokens[] = $value['expo_push_token'];
         }
 
         $sound = $payload['sound'] === 1;
 
-        foreach ($tokens->chunk(10) as $items) {
-            /** @var Collection $item */
-            foreach ($items as $item) {
-                $message = (new ExpoMessage())
-                    ->to($item->toArray())
-                    ->title($payload['title'])
-                    ->body($payload['body'])
-                    ->channelId('default');
+        foreach (array_chunk($tokens, 10) as $tokenChunk) {
+            $message = (new ExpoMessage())
+                ->to($tokenChunk)
+                ->title($payload['title'])
+                ->body($payload['body'])
+                ->channelId('default');
 
-                if ($sound) {
-                    $message->enableSound();
-                }
-
-                $service->notify(collect([$message]));
+            if ($sound) {
+                $message->enableSound();
             }
+
+            $service->notify(collect([$message]));
         }
 
         return [];
