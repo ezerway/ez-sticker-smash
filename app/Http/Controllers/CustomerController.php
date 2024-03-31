@@ -6,6 +6,10 @@ use App\Http\Requests\StoreCustomer;
 use App\Http\Requests\UpdateCustomer;
 use App\Http\Resources\Customer as CustomerResource;
 use App\Models\Customer;
+use App\Services\FirebaseService;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Collection;
 use Okami101\LaravelAdmin\Filters\SearchFilter;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -17,13 +21,13 @@ class CustomerController extends Controller
     public function __construct()
     {
         $this->authorizeResource(Customer::class);
-        $this->database = \App\Services\FirebaseService::connect();
+        $this->database = FirebaseService::connect();
     }
 
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     * @return AnonymousResourceCollection
      */
     public function index()
     {
@@ -66,7 +70,7 @@ class CustomerController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      * @return CustomerResource
      */
     public function store(
@@ -84,9 +88,10 @@ class CustomerController extends Controller
         $sound = $payload['sound'] === 1;
 
         foreach ($tokens->chunk(10) as $items) {
+            /** @var Collection $item */
             foreach ($items as $item) {
                 $message = (new ExpoMessage())
-                    ->to($item)
+                    ->to($item->toArray())
                     ->title($payload['title'])
                     ->body($payload['body'])
                     ->channelId('default');
@@ -108,7 +113,7 @@ class CustomerController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      * @param \App\Models\Customer $customer
      * @return CustomerResource
      */
